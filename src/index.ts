@@ -12,9 +12,13 @@ let path = ''
 const ls = readdirSync(cwd, {
     encoding: 'utf-8'
 }).filter(path => {
-    const stats = statSync(join(cwd, path))
-    if (path.startsWith('.')) return
-    return stats.isDirectory()
+    try {
+        const stats = statSync(join(cwd, path))
+        if (path.startsWith('.')) return
+        return stats.isDirectory()
+    } catch (e) {
+        console.error('Error processing the directories:', e)
+    }
 })
 
 for (let i = 0; i < ls.length; i++) {
