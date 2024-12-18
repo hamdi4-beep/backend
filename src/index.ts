@@ -1,12 +1,19 @@
 import { createReadStream, existsSync, readdirSync, statSync } from 'fs'
 import { basename, dirname, join } from 'path'
 
+const filename = basename(process.argv[2] ?? '')
+
 const readFileStream = (path: string) =>
     createReadStream(path)
         .on('error', console.error)
         .pipe(process.stdout)
 
-const path = getFilePath(basename(process.argv[2]))
+if (!filename) {
+    console.log('Expected a filename.')
+    process.exit(1)
+}
+
+const path = getFilePath(filename)
 
 if (!path) {
     console.log('No such file was found')
@@ -19,6 +26,8 @@ function getFilePath(filename: string) {
     const cwd = dirname(__dirname)
     let path = join(cwd, filename)
 
+    if (existsSync(path)) return basename(path)
+
     const ls = readdirSync(cwd, 'utf-8').filter(item => {
         if (item.startsWith('.')) return
 
@@ -29,8 +38,6 @@ function getFilePath(filename: string) {
             console.error(e)
         }
     })
-
-    if (existsSync(path)) return basename(path)
 
     for (const dir of ls) {
         path = join(dir, filename)
