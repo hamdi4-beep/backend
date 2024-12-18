@@ -1,32 +1,39 @@
 import { createReadStream, existsSync, readdirSync, statSync } from 'fs'
-import { dirname, join } from 'path'
+import { basename, dirname, join } from 'path'
 
-if (!process.argv[2]) {
-    console.log('The script does not work without a provided filename.')
-    process.exit(0)
+const filename = basename(process.argv[2])
+
+if (!filename) {
+    console.log('The filename was not provided.')
+    process.exit(1)
 }
 
 const cwd = dirname(__dirname)
-let path = ''
+let path = '', filefound = false
 
-const ls = readdirSync(cwd, {
-    encoding: 'utf-8'
-}).filter(path => {
+const ls = readdirSync(cwd, 'utf-8').filter(item => {
+    if (item.startsWith('.')) return
+
     try {
-        const stats = statSync(join(cwd, path))
-        if (path.startsWith('.')) return
+        const stats = statSync(item)
         return stats.isDirectory()
     } catch (e) {
-        console.error('Error processing the directories:', e)
+        console.error(e)
     }
 })
 
-for (let i = 0; i < ls.length; i++) {
-    if (existsSync(path = join(cwd, ls[i], process.argv[2]))) {
-        createReadStream(path)
-            .on('error', console.error)
-            .pipe(process.stdout)
+const readFileStream = (path: string) =>
+    createReadStream(path)
+        .on('error', console.error)
+        .pipe(process.stdout)
 
+for (const dir of ls) {
+    path = join(dir, filename)
+
+    if (filefound = existsSync(path)) {
+        readFileStream(path)
         break
     }
 }
+
+if (!filefound) console.log('No such file was found within the subdirectories.')

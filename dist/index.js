@@ -2,25 +2,33 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const path_1 = require("path");
-if (!process.argv[2]) {
-    console.log('The script does not work without a provided filename.');
-    process.exit(0);
+const filename = (0, path_1.basename)(process.argv[2]);
+if (!filename) {
+    console.log('The filename was not provided.');
+    process.exit(1);
 }
 const cwd = (0, path_1.dirname)(__dirname);
-let path = '';
-const ls = (0, fs_1.readdirSync)(cwd, {
-    encoding: 'utf-8'
-}).filter(path => {
-    const stats = (0, fs_1.statSync)((0, path_1.join)(cwd, path));
-    if (path.startsWith('.'))
+let path = '', filefound = false;
+const ls = (0, fs_1.readdirSync)(cwd, 'utf-8').filter(item => {
+    if (item.startsWith('.'))
         return;
-    return stats.isDirectory();
+    try {
+        const stats = (0, fs_1.statSync)(item);
+        return stats.isDirectory();
+    }
+    catch (e) {
+        console.error(e);
+    }
 });
-for (let i = 0; i < ls.length; i++) {
-    if ((0, fs_1.existsSync)(path = (0, path_1.join)(cwd, ls[i], process.argv[2]))) {
-        (0, fs_1.createReadStream)(path)
-            .on('error', console.error)
-            .pipe(process.stdout);
+const readFileStream = (path) => (0, fs_1.createReadStream)(path)
+    .on('error', console.error)
+    .pipe(process.stdout);
+for (const dir of ls) {
+    path = (0, path_1.join)(dir, filename);
+    if (filefound = (0, fs_1.existsSync)(path)) {
+        readFileStream(path);
         break;
     }
 }
+if (!filefound)
+    console.log('No such file was found within the subdirectories.');
