@@ -1,46 +1,41 @@
-import { createReadStream, createWriteStream, existsSync, readdirSync } from 'fs'
-import { basename, dirname, join, resolve } from 'path'
-import { Transform } from 'stream'
+import { createReadStream, createWriteStream } from 'fs'
+import { basename, join } from 'path'
+import { pipeline, Transform } from 'stream'
 
-if (!process.argv[2]) {
-    console.log('Provide the filename argument.')
+const filename = basename(process.argv[2] ?? '')
+
+if (!filename) {
+    console.error('Expected a filename.')
     process.exit(1)
 }
 
-const filename = basename(process.argv[2])
+const filterByRegex = (regex: RegExp) => {
+    const results = [] as string[]
 
-const filterByRegEx = (regex: RegExp) => new Transform({
-    transform(chunk, encoding, callback) {
-        const splitted = (chunk + '').split('\n')
-        this.push(JSON.stringify(splitted.filter(it => regex.test(it)), null, '\t'))
-    }
-})
-
-createReadStream(findFilePath(filename) as string)
-    .on('error', handleError)
-    .pipe(filterByRegEx(/-\s(?:[\S\s]+)/))
-    .pipe(process.stdout)
-
-function handleError(err: any) {
-    if (err.code === 'ENOTENT') {
-        console.log('No such file was found.')
-        process.exit(1)
-    }
-
-    console.error(err)
+    return new Transform({
+        objectMode: true,
+        transform(chunk, encoding, callback) {
+            const lines = (chunk + '').split('\n')
+            results.push(...lines.filter(line => regex.test(line)))
+            callback()
+        },
+        flush(callback) {
+            this.push(JSON.stringify(results, null, '\t'))
+            callback()
+        }
+    })
 }
 
-function findFilePath(filename: string) {
-    const ls = readdirSync(dirname(__dirname), 'utf8')
-    let path = ''
+pipeline(
+    createReadStream(join('files', filename)),
+    filterByRegex(/-\s(?:[\S\s]+):/),
+    process.stdout,
+    (err: any) => {
+        if (err) {
+            console.error(err)
+            process.exit(1)
+        }
 
-    for (const dir of ls) {
-        if (!existsSync(join(dir, filename))) continue
-        return resolve(dir, filename)
+        console.log('The operation was a success.')
     }
-
-    if (!path) {
-        console.log('No such file exists within the subdirectories.')
-        return
-    }
-}
+)
