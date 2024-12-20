@@ -9,14 +9,12 @@ if (!filename) {
     process.exit(1)
 }
 
-const filterByRegex = (regex: RegExp) => {
-    return new Transform({
-        transform(chunk, encoding = 'utf8', callback) {
-            const lines = (chunk + '').split('\n')
-            callback(null, lines.filter(line => regex.test(line)).join('\n'))
-        },
-    })
-}
+const filterByRegex = (regex: RegExp) => new Transform({
+    transform(chunk, encoding = 'utf8', callback) {
+        const lines = (chunk + '').split('\n')
+        callback(null, lines.filter(line => regex.test(line)).join('\n'))
+    },
+})
 
 pipeline(
     createReadStream(join('files', filename)),
