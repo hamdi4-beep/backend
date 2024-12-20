@@ -10,26 +10,18 @@ if (!filename) {
 }
 
 const filterByRegex = (regex: RegExp) => {
-    const results = [] as string[]
-
     return new Transform({
-        objectMode: true,
-        transform(chunk, encoding, callback) {
+        transform(chunk, encoding = 'utf8', callback) {
             const lines = (chunk + '').split('\n')
-            results.push(...lines.filter(line => regex.test(line)))
-            callback()
+            callback(null, lines.filter(line => regex.test(line)).join('\n'))
         },
-        flush(callback) {
-            this.push(JSON.stringify(results, null, '\t'))
-            callback()
-        }
     })
 }
 
 pipeline(
     createReadStream(join('files', filename)),
     filterByRegex(/-\s(?:[\S\s]+):/),
-    process.stdout,
+    createWriteStream('results.txt'),
     (err: any) => {
         if (err) {
             console.error(err)
