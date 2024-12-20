@@ -2,10 +2,16 @@ import { createReadStream, createWriteStream } from 'fs'
 import { basename, join } from 'path'
 import { pipeline, Transform } from 'stream'
 
+const getFileExtension = (filename: string) => filename.split('.').pop()?.toLowerCase()
 const filename = basename(process.argv[2] ?? '')
 
 if (!filename) {
     console.error('Expected a filename.')
+    process.exit(1)
+}
+
+if (getFileExtension(filename) !== 'md') {
+    console.error('Only MD files are allowed.')
     process.exit(1)
 }
 
@@ -26,6 +32,6 @@ pipeline(
             process.exit(1)
         }
 
-        console.log('The operation was a success.')
+        console.log('Created a new text file in the root directory.')
     }
 )
