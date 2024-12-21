@@ -1,21 +1,30 @@
 import { createReadStream } from 'fs'
 import { join } from 'path'
-import { PassThrough, Readable } from 'stream'
+import { PassThrough, pipeline, Readable, Transform, Writable } from 'stream'
 
-readFiles(['style-guide.md', 'results.txt'])
-    .then(() => console.log('Finished processing the files successfully.'))
+const files = ['style-guide.md', 'results.txt']
 
-function readFiles(files: string[]) {
-    const passThrough = new PassThrough()
-
-    return new Promise((resolve, reject) => Readable
-        .from(files)
-        .on('data', filename => {
-            createReadStream(join('files', filename))
-                .on('error', reject)
-                .pipe(passThrough)
-                .pipe(process.stdout)
+Readable
+    .from(files)
+    .on('data', filename => {
+        const passThrough = new PassThrough({
+            objectMode: true,
+            transform(chunk, enc, callback) {
+                this.push(chunk + '\n')
+            }
         })
-        .on('end', () => passThrough.on('finish', resolve))
-    )
-}
+        
+        pipeline(
+            createReadStream(join('files', filename)),
+            passThrough,
+            process.stdout,
+            (err: any) => {
+                if (err) {
+                    console.error(err)
+                    process.exit(1)
+                }
+
+                console.log('The pipeline operation was a success.')
+            }
+        )
+    })
