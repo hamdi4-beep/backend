@@ -1,33 +1,21 @@
-import { createReadStream, createWriteStream } from 'fs'
+import { createReadStream } from 'fs'
 import { join } from 'path'
-import { pipeline, Transform } from 'stream'
+import { PassThrough, Readable } from 'stream'
 
-const filterByRegex = (regex: RegExp) => new Transform({
-    objectMode: true,
-    transform(chunk, encoding, callback) {
-        const lines = (chunk + '').split('\n')
+readFiles(['style-guide.md', 'results.txt'])
+    .then(() => console.log('Finished processing the files successfully.'))
 
-        lines.forEach(line => {
-            if (regex.test(line)) {
-                line = line.substring(2)
-                this.push(line + '\n')
-            }
+function readFiles(files: string[]) {
+    const passThrough = new PassThrough()
+
+    return new Promise((resolve, reject) => Readable
+        .from(files)
+        .on('data', filename => {
+            createReadStream(join('files', filename))
+                .on('error', reject)
+                .pipe(passThrough)
+                .pipe(process.stdout)
         })
-
-        callback()
-    }
-})
-
-pipeline(
-    createReadStream(join('files', process.argv[2] ?? 'style-guide.md')),
-    filterByRegex(/-\s(?:[\S\s]+):/),
-    createWriteStream('results.txt'),
-    (err: any) => {
-        if (err) {
-            console.error(err)
-            process.exit(1)
-        }
-
-        console.log('The operation was a success!')
-    }
-)
+        .on('end', () => passThrough.on('finish', resolve))
+    )
+}
