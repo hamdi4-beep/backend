@@ -1,30 +1,26 @@
 import { createReadStream } from 'fs'
 import { join } from 'path'
-import { PassThrough, pipeline, Readable, Transform, Writable } from 'stream'
+import { PassThrough, pipeline, Readable, Transform } from 'stream'
 
-const files = ['style-guide.md', 'results.txt']
+const monitor = new PassThrough({
+    transform(chunk, encoding, callback) {
+        this.push(chunk + '\n')
+        callback()
+    }
+})
 
-Readable
-    .from(files)
-    .on('data', filename => {
-        const passThrough = new PassThrough({
-            objectMode: true,
-            transform(chunk, enc, callback) {
-                this.push(chunk + '\n')
-            }
-        })
-        
-        pipeline(
-            createReadStream(join('files', filename)),
-            passThrough,
-            process.stdout,
-            (err: any) => {
-                if (err) {
-                    console.error(err)
-                    process.exit(1)
-                }
+const joinFiles = (files: string[]) =>
+    new Promise((resolve, reject) =>
+        Readable
+            .from(files)
+            .on('data', filename =>
+                createReadStream(join('files', filename))
+                    .on('error', reject)
+                    .pipe(monitor)
+                    .on('finish', resolve)
+            )
+    )
 
-                console.log('The pipeline operation was a success.')
-            }
-        )
-    })
+joinFiles(['style-guide.md', 'results.txt'])
+    .then(() => monitor.pipe(process.stdout))
+    .catch(console.error)
