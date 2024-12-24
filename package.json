@@ -10,5 +10,11 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "superagent": "^10.1.1"
+  },
+  "devDependencies": {
+    "@types/superagent": "^8.1.9"
+  }
 }

@@ -1,32 +1,48 @@
-import { createReadStream, createWriteStream, WriteStream } from 'fs'
-import { join } from 'path'
-import { PassThrough, pipeline, Readable, Transform } from 'stream'
+const createTaskQueue = (concurrency: number) => new class {
+    concurrency: number
+    running: number
+    queue: Function[]
 
-const handleFiles = (files: string[]) =>
-    new Promise((resolve, reject) =>
-        pipeline(
-            Readable.from(files),
-            new Transform({
-                objectMode: true,
-                transform(filename, encoding, callback) {
-                    createReadStream(join('files', filename + ''))
-                        .on('error', reject)
-                        .on('data', chunk => this.push(chunk + '\n'))
-                        .on('end', callback)
-                }
-            }),
-            process.stdout,
-            (err: any) => {
-                if (err) {
-                    reject(err)
-                    process.exit(1)
-                }
+    constructor() {
+        this.concurrency = concurrency
+        this.running = 0
+        this.queue = []
+    }
 
-                resolve(null)
-            }
-        )
-    )
+    addTask(task: Function) {
+        this.queue.push(task)
+        return this
+    }
 
-handleFiles(['style-guide.md', 'results.txt'])
-    .then(() => console.log('The pipeline operation was successful.'))
-    .catch(console.error)
+    runTask(value: string, callback: Function) {
+        let task
+
+        if (this.running < this.concurrency && (task = this.queue.shift())) {
+            this.running++
+
+            task(() => {
+                callback(value)
+                this.running--
+            })
+        }
+
+        return this
+    }
+}
+
+const taskQueue = createTaskQueue(2)
+
+taskQueue
+    .addTask(delay(3000))
+    .addTask(delay(6000))
+    .addTask(delay(9000))
+
+taskQueue
+    .runTask('Task 1', console.log)
+    .runTask('Task 2', console.log)
+    .runTask('Task 3', console.log)
+
+function delay(ms: number) {
+    return (callback: Function) =>
+        setTimeout(callback, ms)
+}

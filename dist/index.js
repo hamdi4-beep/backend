@@ -1,29 +1,35 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = require("fs");
-const path_1 = require("path");
-const stream_1 = require("stream");
-const handleFiles = (files) => new Promise((resolve, reject) => (0, stream_1.pipeline)(stream_1.Readable.from(files), new stream_1.Transform({
-    objectMode: true,
-    transform(filename, encoding, callback) {
-        (0, fs_1.createReadStream)((0, path_1.join)('files', filename + ''))
-            .on('error', reject)
-            .on('data', chunk => this.push(chunk + '\n'))
-            .on('end', callback);
+const creatTaskQueue = (concurrency) => new class {
+    constructor() {
+        this.concurrency = concurrency;
+        this.running = 0;
+        this.queue = [];
     }
-}), process.stdout, (err) => {
-    if (err) {
-        reject(err);
-        process.exit(1);
+    addTask(task) {
+        this.queue.push(task);
+        return this;
     }
-    resolve(null);
-}));
-handleFiles(['style-guide.md', 'results.txt'])
-    .then(() => console.log('The pipeline operation was successful.'))
-    .catch(err => {
-    if (err.code === 'ENOENT') {
-        console.log('No such file was found.');
-        process.exit(1);
+    runTask(value, callback) {
+        let task;
+        if (this.running < this.concurrency && (task = this.queue.shift())) {
+            this.running++;
+            task(() => {
+                callback(value);
+                this.running--;
+            });
+        }
+        return this;
     }
-    console.error(err);
-});
+};
+const taskQueue = creatTaskQueue(2);
+taskQueue
+    .addTask(delay(3000))
+    .addTask(delay(6000))
+    .addTask(delay(9000));
+taskQueue
+    .runTask('Task 1', console.log)
+    .runTask('Task 2', console.log)
+    .runTask('Task 3', console.log);
+function delay(ms) {
+    return (callback) => setTimeout(callback, ms);
+}
