@@ -1,4 +1,4 @@
-const createTaskQueue = (concurrency: number) => new class {
+const createTaskQueue = (concurrency = 2) => new class {
     concurrency: number
     running: number
     queue: Function[]
@@ -14,15 +14,21 @@ const createTaskQueue = (concurrency: number) => new class {
         return this
     }
 
-    runTask(value: string, callback: Function) {
-        let task
+    next(callback: Function) {
+        let currentTask
 
-        if (this.running < this.concurrency && (task = this.queue.shift())) {
+        if (!this.queue.length) {
+            console.log('Done:', this.running)
+            return
+        }
+
+        if (this.running < this.concurrency && (currentTask = this.queue.shift())) {
             this.running++
 
-            task(() => {
-                callback(value)
+            currentTask(() => {
+                callback()
                 this.running--
+                this.next(callback)
             })
         }
 
@@ -33,14 +39,14 @@ const createTaskQueue = (concurrency: number) => new class {
 const taskQueue = createTaskQueue(2)
 
 taskQueue
+    .addTask(delay(1000))
+    .addTask(delay(2000))
     .addTask(delay(3000))
-    .addTask(delay(6000))
-    .addTask(delay(9000))
+    .addTask(delay(4000))
+    .addTask(delay(5000))
 
 taskQueue
-    .runTask('Task 1', console.log)
-    .runTask('Task 2', console.log)
-    .runTask('Task 3', console.log)
+    .next(() => console.log('Currently running:', taskQueue.running))
 
 function delay(ms: number) {
     return (callback: Function) =>

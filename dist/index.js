@@ -1,5 +1,5 @@
 "use strict";
-const creatTaskQueue = (concurrency) => new class {
+const createTaskQueue = (concurrency = 2) => new class {
     constructor() {
         this.concurrency = concurrency;
         this.running = 0;
@@ -9,27 +9,32 @@ const creatTaskQueue = (concurrency) => new class {
         this.queue.push(task);
         return this;
     }
-    runTask(value, callback) {
-        let task;
-        if (this.running < this.concurrency && (task = this.queue.shift())) {
+    next(callback) {
+        let currentTask;
+        if (!this.queue.length) {
+            console.log('Done:', this.running);
+            return;
+        }
+        if (this.running < this.concurrency && (currentTask = this.queue.shift())) {
             this.running++;
-            task(() => {
-                callback(value);
+            currentTask(() => {
+                callback();
                 this.running--;
+                this.next(callback);
             });
         }
         return this;
     }
 };
-const taskQueue = creatTaskQueue(2);
+const taskQueue = createTaskQueue(2);
 taskQueue
+    .addTask(delay(1000))
+    .addTask(delay(2000))
     .addTask(delay(3000))
-    .addTask(delay(6000))
-    .addTask(delay(9000));
+    .addTask(delay(4000))
+    .addTask(delay(5000));
 taskQueue
-    .runTask('Task 1', console.log)
-    .runTask('Task 2', console.log)
-    .runTask('Task 3', console.log);
+    .next(() => console.log('Currently running:', taskQueue.running));
 function delay(ms) {
     return (callback) => setTimeout(callback, ms);
 }
