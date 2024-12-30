@@ -1,54 +1,36 @@
-const createTaskQueue = (concurrency = 2) => new class {
-    concurrency: number
-    running: number
-    queue: Function[]
+import { createReadStream, createWriteStream } from 'fs'
+import axios from 'axios'
+import { join } from 'path'
+import { Readable } from 'stream'
+import { readFile } from 'fs/promises'
 
-    constructor() {
-        this.concurrency = concurrency
-        this.running = 0
-        this.queue = []
-    }
+const gen = generateSequence(Array.from({ length: 8 }, (_, i) => i + 1))
 
-    addTask(task: Function) {
-        this.queue.push(task)
-        return this
-    }
+console.log(gen.next())
+console.log(gen.next())
+console.log(gen.next())
 
-    next(callback: Function) {
-        let currentTask
+function* generateSequence(arr: any[]) {
+    let i = 0
 
-        if (!this.queue.length) {
-            console.log('Done:', this.running)
-            return
-        }
-
-        if (this.running < this.concurrency && (currentTask = this.queue.shift())) {
-            this.running++
-
-            currentTask(() => {
-                callback()
-                this.running--
-                this.next(callback)
-            })
-        }
-
-        return this
+    while (i < 3) {
+        const items = createPartition(arr, 3)
+        yield items[i++]
     }
 }
 
-const taskQueue = createTaskQueue(2)
+function createPartition(items: any[], divideBy: number) {
+    const results = []
+    let prev
 
-taskQueue
-    .addTask(delay(1000))
-    .addTask(delay(2000))
-    .addTask(delay(3000))
-    .addTask(delay(4000))
-    .addTask(delay(5000))
+    for (let i = 1; i <= divideBy; i++) {
+        const chunks = []
 
-taskQueue
-    .next(() => console.log('Currently running:', taskQueue.running))
+        for (let j = prev ?? 0; j < (prev = Math.round(items.length / divideBy) * i); j++)
+            chunks.push(items[j])
+        
+        results.push(chunks.filter(Boolean))
+    }
 
-function delay(ms: number) {
-    return (callback: Function) =>
-        setTimeout(callback, ms)
+    return results
 }
