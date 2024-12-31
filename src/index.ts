@@ -1,36 +1,22 @@
-import { createReadStream, createWriteStream } from 'fs'
-import axios from 'axios'
+import { Cipher, createCipheriv, createDecipheriv, randomBytes, randomFill, scrypt } from 'crypto'
+import { createReadStream, readFile } from 'fs'
 import { join } from 'path'
-import { Readable } from 'stream'
-import { readFile } from 'fs/promises'
 
-const gen = generateSequence(Array.from({ length: 8 }, (_, i) => i + 1))
+const createList = (n: number, i = 1, num = ''): string[] =>
+    i <= n ? createList(n, i + 1, num += i !== 1 ? `.${i}` : i) : num.split('.')
 
-console.log(gen.next())
-console.log(gen.next())
-console.log(gen.next())
+const results = []
+const divideBy = 4
 
-function* generateSequence(arr: any[]) {
-    let i = 0
+const list = createList(20)
 
-    while (i < 3) {
-        const items = createPartition(arr, 3)
-        yield items[i++]
-    }
+for (let i = 1, prev; i <= divideBy; i++) {
+    const chunks = []
+
+    for (let j = prev ?? 0; j < (prev = Math.round(list.length / divideBy) * i); j++)
+        chunks.push(j + 1)
+
+    results.push(chunks)
 }
 
-function createPartition(items: any[], divideBy: number) {
-    const results = []
-    let prev
-
-    for (let i = 1; i <= divideBy; i++) {
-        const chunks = []
-
-        for (let j = prev ?? 0; j < (prev = Math.round(items.length / divideBy) * i); j++)
-            chunks.push(items[j])
-        
-        results.push(chunks.filter(Boolean))
-    }
-
-    return results
-}
+console.log(results)
