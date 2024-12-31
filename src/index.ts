@@ -1,22 +1,21 @@
-import { Cipher, createCipheriv, createDecipheriv, randomBytes, randomFill, scrypt } from 'crypto'
-import { createReadStream, readFile } from 'fs'
-import { join } from 'path'
+import * as crypto from 'crypto'
 
-const createList = (n: number, i = 1, num = ''): string[] =>
-    i <= n ? createList(n, i + 1, num += i !== 1 ? `.${i}` : i) : num.split('.')
+const key = Buffer.alloc(32)
+const iv = crypto.randomBytes(16)
 
-const results = []
-const divideBy = 4
+// encryption
 
-const list = createList(20)
-
-for (let i = 1, prev; i <= divideBy; i++) {
-    const chunks = []
-
-    for (let j = prev ?? 0; j < (prev = Math.round(list.length / divideBy) * i); j++)
-        chunks.push(j + 1)
-
-    results.push(chunks)
+const encrypt = (data: string) => {
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+    return cipher.update(data, 'utf-8', 'hex') + cipher.final('hex')
 }
 
-console.log(results)
+// decryption
+
+const decrypt = (cipherText: string) => {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+    return decipher.update(cipherText, 'hex', 'utf-8') + decipher.final('utf-8')
+}
+
+const decrypted = decrypt(encrypt('Sensitive information'))
+console.log(decrypted)
