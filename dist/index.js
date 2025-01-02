@@ -52,6 +52,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const path_1 = require("path");
 const rs = fs.createReadStream((0, path_1.join)('files', 'style-guide.md'));
+let buffer;
+setTimeout(() => {
+    const decoder = new TextDecoder();
+    console.log(decoder.decode(buffer));
+}, 10);
 rs.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, e_1, _b, _c;
     try {
@@ -59,7 +64,7 @@ rs.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
             _c = rs_1_1.value;
             _d = false;
             const chunk = _c;
-            console.log(Buffer.alloc(5, chunk));
+            buffer = Buffer.alloc(chunk.length, chunk);
         }
     }
     catch (e_1_1) { e_1 = { error: e_1_1 }; }
