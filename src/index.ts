@@ -1,21 +1,19 @@
-import * as crypto from 'crypto'
+import * as fs from 'fs'
+import { join } from 'path'
+import { EventEmitter, Transform } from 'stream'
 
-const key = Buffer.alloc(32)
-const iv = crypto.randomBytes(16)
+const event = new EventEmitter()
+const inputs = process.argv.slice(2)
 
-// encryption
+const sources = inputs.map((file, i, arr) =>
+    fs.createReadStream(join('files', file))
+        .on('error', console.error)
+)
 
-const encrypt = (data: string) => {
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-    return cipher.update(data, 'utf-8', 'hex') + cipher.final('hex')
-}
-
-// decryption
-
-const decrypt = (cipherText: string) => {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
-    return decipher.update(cipherText, 'hex', 'utf-8') + decipher.final('utf-8')
-}
-
-const decrypted = decrypt(encrypt('Sensitive information'))
-console.log(decrypted)
+for (const src of sources)
+    src.on('readable', async () => {
+        let chunks = ''
+        for await (const chunk of src)
+            chunks += chunk
+        console.log(chunks)
+    })

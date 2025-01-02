@@ -32,19 +32,48 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const crypto = __importStar(require("crypto"));
-const key = Buffer.alloc(32);
-const iv = crypto.randomBytes(16);
-// encryption
-const encrypt = (data) => {
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-    return cipher.update(data, 'utf-8', 'hex') + cipher.final('hex');
-};
-// decryption
-const decrypt = (cipherText) => {
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    return decipher.update(cipherText, 'hex', 'utf-8') + decipher.final('utf-8');
-};
-const decrypted = decrypt(encrypt('Sensitive information'));
-console.log(decrypted);
+const fs = __importStar(require("fs"));
+const path_1 = require("path");
+const stream_1 = require("stream");
+const event = new stream_1.EventEmitter();
+const inputs = process.argv.slice(2);
+const sources = inputs.map((file, i, arr) => fs.createReadStream((0, path_1.join)('files', file))
+    .on('error', console.error));
+for (const src of sources)
+    src.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, e_1, _b, _c;
+        let chunks = '';
+        try {
+            for (var _d = true, src_1 = __asyncValues(src), src_1_1; src_1_1 = yield src_1.next(), _a = src_1_1.done, !_a; _d = true) {
+                _c = src_1_1.value;
+                _d = false;
+                const chunk = _c;
+                chunks += chunk;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = src_1.return)) yield _b.call(src_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        console.log(chunks);
+    }));
