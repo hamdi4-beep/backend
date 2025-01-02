@@ -51,29 +51,22 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const path_1 = require("path");
-const stream_1 = require("stream");
-const event = new stream_1.EventEmitter();
-const inputs = process.argv.slice(2);
-const sources = inputs.map((file, i, arr) => fs.createReadStream((0, path_1.join)('files', file))
-    .on('error', console.error));
-for (const src of sources)
-    src.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, e_1, _b, _c;
-        let chunks = '';
+const rs = fs.createReadStream((0, path_1.join)('files', 'style-guide.md'));
+rs.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, e_1, _b, _c;
+    try {
+        for (var _d = true, rs_1 = __asyncValues(rs), rs_1_1; rs_1_1 = yield rs_1.next(), _a = rs_1_1.done, !_a; _d = true) {
+            _c = rs_1_1.value;
+            _d = false;
+            const chunk = _c;
+            console.log(Buffer.alloc(5, chunk));
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
         try {
-            for (var _d = true, src_1 = __asyncValues(src), src_1_1; src_1_1 = yield src_1.next(), _a = src_1_1.done, !_a; _d = true) {
-                _c = src_1_1.value;
-                _d = false;
-                const chunk = _c;
-                chunks += chunk;
-            }
+            if (!_d && !_a && (_b = rs_1.return)) yield _b.call(rs_1);
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (!_d && !_a && (_b = src_1.return)) yield _b.call(src_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        console.log(chunks);
-    }));
+        finally { if (e_1) throw e_1.error; }
+    }
+}));
