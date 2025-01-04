@@ -1,16 +1,30 @@
-import * as fs from 'fs'
+import { createReadStream } from 'fs'
+import * as net from 'net'
 import { join } from 'path'
-import { EventEmitter } from 'stream'
 
-const rs = fs.createReadStream(join('files', 'style-guide.md'))
-let buffer: Buffer
+const HOST = 'localhost'
+const PORT = 3000
 
-setTimeout(() => {
-    const decoder = new TextDecoder()
-    console.log(decoder.decode(buffer))
-}, 10)
+// Server
 
-rs.on('readable', async () => {
-    for await (const chunk of rs)
-        buffer = Buffer.alloc(chunk.length, chunk)
+const server = net.createServer()
+server.listen(PORT, () => console.log('Running on port:', PORT))
+
+server.on('connection', socket =>
+    socket
+        .on('data', buffer => {
+            const data = buffer.toString()
+            console.log(data)
+        })
+        .on('close', () => console.log('Lost a connection with the TCP socket.'))
+)
+
+// Client
+
+const socket = net.createConnection(PORT, HOST, () => {
+    socket.write('Received some data from the TCP socket.')
+
+    socket
+        .on('timeout', () => socket.end())
+        .setTimeout(5000)
 })

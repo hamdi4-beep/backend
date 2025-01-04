@@ -32,46 +32,23 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __importStar(require("fs"));
-const path_1 = require("path");
-const rs = fs.createReadStream((0, path_1.join)('files', 'style-guide.md'));
-let buffer;
-setTimeout(() => {
-    const decoder = new TextDecoder();
-    console.log(decoder.decode(buffer));
-}, 10);
-rs.on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, e_1, _b, _c;
-    try {
-        for (var _d = true, rs_1 = __asyncValues(rs), rs_1_1; rs_1_1 = yield rs_1.next(), _a = rs_1_1.done, !_a; _d = true) {
-            _c = rs_1_1.value;
-            _d = false;
-            const chunk = _c;
-            buffer = Buffer.alloc(chunk.length, chunk);
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (!_d && !_a && (_b = rs_1.return)) yield _b.call(rs_1);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
-}));
+const net = __importStar(require("net"));
+const HOST = 'localhost';
+const PORT = 3000;
+// Server
+const server = net.createServer();
+server.listen(PORT, () => console.log('Running on port:', PORT));
+server.on('connection', socket => socket
+    .on('data', buffer => {
+    const data = buffer.toString();
+    console.log(data);
+})
+    .on('close', () => console.log('Lost a connection with the TCP socket.')));
+// Client
+const socket = net.createConnection(PORT, HOST, () => {
+    socket.write('Received some data from the TCP socket.');
+    socket
+        .on('timeout', () => socket.end())
+        .setTimeout(5000);
+});
