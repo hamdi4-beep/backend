@@ -33,20 +33,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = require("child_process");
 const net = __importStar(require("net"));
-const path_1 = require("path");
-const stream_1 = require("stream");
-process.env.PORT = '3000';
-const server = net.createServer();
-server.listen(process.env.PORT, () => console.log('Listening on port:', process.env.PORT));
-server.on('connection', socket => socket
-    .on('close', () => console.log('TCP Socket closed the connection.'))
-    .pipe(new stream_1.Transform({
-    transform(chunk, encoding, callback) {
-        this.push(chunk + '\n');
-        callback();
-    }
-}))
-    .pipe(process.stdout));
-const child = (0, child_process_1.fork)((0, path_1.join)('dist', 'client/index.js'));
+const PORT = parseInt(process.env.PORT);
+const socket = net.createConnection(PORT, 'localhost', () => socket.write('TCP Socket established a connection!'));
+socket
+    .on('timeout', () => socket.end())
+    .setTimeout(5000);
