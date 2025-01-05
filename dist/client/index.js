@@ -35,7 +35,5 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const net = __importStar(require("net"));
 const PORT = parseInt(process.env.PORT);
-const socket = net.createConnection(PORT, 'localhost', () => socket.write('TCP Socket established a connection!'));
-socket
-    .on('timeout', () => socket.end())
-    .setTimeout(5000);
+const socket = net.createConnection(PORT, 'localhost', () => socket
+    .pipe(process.stdout));
