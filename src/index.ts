@@ -1,20 +1,14 @@
-import { fork, spawn } from 'child_process'
+import { fork } from 'child_process'
 import { createReadStream } from 'fs'
-import * as net from 'net'
+import { createServer } from 'net'
 import { join } from 'path'
-import { pipeline, Transform } from 'stream'
+import { pipeline, Readable } from 'stream'
 
-process.env.PORT = '3000'
+process.env.PORT = '8080'
 
-const child = fork(
-    join('dist', 'client/index.js')
-)
-
-const readStream = createReadStream(join('files', 'style-guide.md'))
-
-const server = net.createServer(socket => {
-    console.log('Server: Connected to the client.')
-    readStream.pipe(socket)
+const server = createServer(socket => {
+    console.log('Client connected!')
+    socket.pipe(process.stdout)
 })
 
 server.listen(process.env.PORT, () => console.log('Running on port:', process.env.PORT))
