@@ -1,11 +1,20 @@
 import { createReadStream } from 'fs'
 import * as net from 'net'
 import { join } from 'path'
-import { Transform } from 'stream'
+import * as readline from 'readline'
 
-const PORT = parseInt(process.env.PORT as string)
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
 
-const socket = net.createConnection(PORT, 'localhost', () =>
-    socket
-        .pipe(process.stdout)
-)
+const socket = net.connect(3000, 'localhost', () => {
+    sendMessage()
+})
+
+function sendMessage() {
+    rl.question('Your Message: ', msg => {
+        socket.write(msg)
+        sendMessage()
+    })
+}

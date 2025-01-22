@@ -12,10 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/ws": "^8.5.13",
     "superagent": "^10.1.1"
   },
   "devDependencies": {
     "@types/superagent": "^8.1.9",
-    "axios": "^1.7.9"
+    "axios": "^1.7.9",
+    "ws": "^8.18.0"
   }
 }
