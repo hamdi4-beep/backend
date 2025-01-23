@@ -7,10 +7,8 @@ const readStream = (0, fs_1.createReadStream)((0, path_1.join)('files', 'style-g
 readStream
     .on('error', console.error)
     .pipe(createSplitTransform())
-    .pipe(createFilterTransform('-'))
-    .pipe((0, fs_1.createWriteStream)('style.txt'));
-readStream
-    .on('end', () => console.log('Created a new file in the root directory.'));
+    .pipe(createFilterTransform('##'))
+    .pipe(process.stdout);
 function createSplitTransform() {
     return new stream_1.Transform({
         transform(chunk, encoding, callback) {
