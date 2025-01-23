@@ -1,30 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = require("fs");
+const child_process_1 = require("child_process");
+const http_1 = require("http");
 const path_1 = require("path");
-const stream_1 = require("stream");
-const createSplitTransform = () => new stream_1.Transform({
-    objectMode: true,
-    transform(chunk, encoding, callback) {
-        for (const line of (chunk + '').split('\n'))
-            this.push(line + '\n');
-        callback();
-    }
+const PORT = 3000;
+const server = (0, http_1.createServer)();
+server.listen(PORT, () => console.log('Running on port:', PORT));
+server.on('connection', socket => {
+    console.log('Connected!');
+    socket.pipe(process.stdout);
 });
-const createFilterTransform = (searchStr) => new stream_1.Transform({
-    objectMode: true,
-    transform(chunk, encoding, callback) {
-        if ((chunk = chunk + '').includes('https:')) {
-            const result = chunk;
-            this.push(result);
-        }
-        callback();
-    }
-});
-(0, stream_1.pipeline)((0, fs_1.createReadStream)((0, path_1.join)('files', 'style-guide.md')), createSplitTransform(), createFilterTransform('-'), process.stdout, (err) => {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    console.log('The pipeline operation was successful');
-});
+const { stdout, stderr } = (0, child_process_1.spawn)('node', [(0, path_1.join)('dist', 'client/index.js')]);
+stdout.pipe(process.stdout);

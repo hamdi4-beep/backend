@@ -1,40 +1,18 @@
-import { createReadStream } from 'fs'
+import { spawn } from 'child_process'
+import { createServer } from 'http'
 import { join } from 'path'
-import { pipeline, Transform } from 'stream'
 
-const createSplitTransform = () => new Transform({
-    objectMode: true,
-    transform(chunk: string | Buffer, encoding, callback) {
-        for (const line of (chunk + '').split('\n'))
-            this.push(line + '\n')
+const PORT = 3000
 
-        callback()
-    }
+const server = createServer()
+server.listen(PORT, () => console.log('Running on port:', PORT))
+
+server.on('connection', socket => {
+    console.log('Connected!')
+    socket.pipe(process.stdout)
 })
 
-const createFilterTransform = (searchStr: string) => new Transform({
-    objectMode: true,
-    transform(chunk: string | Buffer, encoding, callback) {
-        if ((chunk = chunk + '').startsWith(searchStr)) {
-            const result = chunk.substring(2)
-            this.push(result)
-        }
+const {stdout, stderr} = spawn('node', [join('dist', 'client/index.js')])
 
-        callback()
-    }
-})
-
-pipeline(
-    createReadStream(join('files', 'style-guide.md')),
-    createSplitTransform(),
-    createFilterTransform('-'),
-    process.stdout,
-    (err: any) => {
-        if (err) {
-            console.error(err)
-            return
-        }
-
-        console.log('The pipeline operation was successful')
-    }
-)
+stdout.pipe(process.stdout)
+stderr.pipe(process.stderr)
