@@ -1,14 +1,69 @@
 "use strict";
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function awaitReturn(f) { return function (v) { return Promise.resolve(v).then(f, reject); }; }
+    function verb(n, f) { if (g[n]) { i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; if (f) i[n] = f(i[n]); } }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = require("child_process");
-const http_1 = require("http");
+const fs_1 = require("fs");
 const path_1 = require("path");
-const PORT = 3000;
-const server = (0, http_1.createServer)();
-server.listen(PORT, () => console.log('Running on port:', PORT));
-server.on('connection', socket => {
-    console.log('Connected!');
-    socket.pipe(process.stdout);
+const stream_1 = require("stream");
+const readStream = (0, fs_1.createReadStream)((0, path_1.join)('files', 'style-guide.md'));
+const createSplitTransform = (separator) => new stream_1.Transform({
+    objectMode: true,
+    transform(chunk, encoding, callback) {
+        for (const line of (chunk + '').split(separator))
+            this.push(line + '\n');
+        callback();
+    }
 });
-const { stdout, stderr } = (0, child_process_1.spawn)('node', [(0, path_1.join)('dist', 'client/index.js')]);
-stdout.pipe(process.stdout);
+const createFilterTransform = (searchStr) => new stream_1.Transform({
+    objectMode: true,
+    transform(chunk, encoding, callback) {
+        if ((chunk += '').startsWith(searchStr))
+            this.push(chunk);
+        callback();
+    }
+});
+(0, stream_1.pipeline)(readStream, createSplitTransform('\n'), createFilterTransform('-'), function (src) {
+    return __asyncGenerator(this, arguments, function* () {
+        var _a, e_1, _b, _c;
+        try {
+            for (var _d = true, src_1 = __asyncValues(src), src_1_1; src_1_1 = yield __await(src_1.next()), _a = src_1_1.done, !_a; _d = true) {
+                _c = src_1_1.value;
+                _d = false;
+                const chunk = _c;
+                const decoded = chunk.toString();
+                console.log(decoded);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = src_1.return)) yield __await(_b.call(src_1));
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    });
+}, (err) => {
+    if (err) {
+        console.error(err);
+        return;
+    }
+    console.log('The pipeline operation was successful!');
+});
