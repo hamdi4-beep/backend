@@ -24,7 +24,7 @@ const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const stream_1 = require("stream");
-const { stdout, stderr } = (0, child_process_1.spawn)('git', process.argv.slice(2));
+const { stdout, stderr } = (0, child_process_1.spawn)('python', process.argv.slice(2));
 const stdoutStream = (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stdout.txt'));
 const stderrStream = (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stderr.txt'));
 const child = [
@@ -56,5 +56,5 @@ const child = [
         console.error(err);
         return;
     }
-    console.log('Check the logs directory for the outputs.');
+    console.log('The outputs are stored in the logs directory.');
 });

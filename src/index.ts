@@ -3,7 +3,7 @@ import { createWriteStream, WriteStream } from 'fs'
 import { join } from 'path'
 import internal, { pipeline, Readable } from 'stream'
 
-const {stdout, stderr} = spawn('git', process.argv.slice(2))
+const {stdout, stderr} = spawn('python', process.argv.slice(2))
 
 const stdoutStream = createWriteStream(join('logs', 'stdout.txt'))
 const stderrStream = createWriteStream(join('logs', 'stderr.txt'))
@@ -27,6 +27,6 @@ pipeline(
             return
         }
 
-        console.log('Check the logs directory for the outputs.')
+        console.log('The outputs are stored in the logs directory.')
     }
 )
