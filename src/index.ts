@@ -4,7 +4,7 @@ import { join } from 'path'
 import internal, { pipeline } from 'stream'
 
 // spawns a new process with the given command
-const {stderr, stdout} = spawn('git', 'remote get-url origin'.split(' '))
+const {stderr, stdout} = spawn('git', process.argv.slice(2))
 
 const stdoutStream = createWriteStream(join('logs', 'stdout.txt'))
 const stderrStream = createWriteStream(join('logs', 'stderr.txt'))
@@ -20,3 +20,5 @@ for (const key in sources) {
     const [std, stream] = sources[key]
     std.pipe(stream)
 }
+
+console.log('Check the "logs" directory to find the modified files.')
