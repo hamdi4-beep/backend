@@ -1,32 +1,37 @@
-import { spawn } from 'child_process'
+import {spawn} from 'child_process'
 import { createWriteStream, WriteStream } from 'fs'
 import { join } from 'path'
-import internal, { pipeline, Readable } from 'stream'
+import internal from 'stream'
 
-const {stdout, stderr} = spawn('python', process.argv.slice(2))
+const subprocess = spawn('python', [join('py', 'main.py'), ...process.argv.slice(2)])
 
-const stdoutStream = createWriteStream(join('logs', 'stdout.txt'))
-const stderrStream = createWriteStream(join('logs', 'stderr.txt'))
+const stdOutFile = createWriteStream(join('logs', 'stdout.txt'))
+const stdErrFile = createWriteStream(join('logs', 'stderr.txt'))
 
-const child = [
-    [stdout, stdoutStream],
-    [stderr, stderrStream]
-] as [internal.Readable, WriteStream][]
+const [
+    [outStd, outFile],
+    [errStd, errFile]
+] = new Map<internal.Readable, WriteStream>([
+    [subprocess.stdout, stdOutFile],
+    [subprocess.stderr, stdErrFile]
+])
 
-pipeline(
-    Readable.from(child),
-    async function*(src: AsyncIterable<[internal.Readable, WriteStream]>) {
-        for await (const sub of src) {
-            const [std, stream] = sub
-            std.pipe(stream)
-        }
-    },
-    (err: any) => {
-        if (err) {
-            console.error(err)
-            return
-        }
+outStd
+    .pipe(outFile)
+    .on('error', console.error)
+    .on('finish', () => {
+        console.log('Generated a log file for stdOut.')
+        stdOutFile.end()
+    })
 
-        console.log('The outputs are stored in the logs directory.')
-    }
+errStd
+    .pipe(errFile)
+    .on('error', console.error)
+    .on('finish', () => {
+        console.log('Generated a log file for stdErr')
+        stdErrFile.end()
+    })
+
+subprocess.on('close', code =>
+    console.log('\nThe subprocess terminated with exit code:', code)
 )
