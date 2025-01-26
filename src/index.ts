@@ -9,29 +9,26 @@ const stdOutFile = createWriteStream(join('logs', 'stdout.txt'))
 const stdErrFile = createWriteStream(join('logs', 'stderr.txt'))
 
 const [
-    [outStd, outFile],
-    [errStd, errFile]
+    [stdOut, outFile],
+    [stdErr, errFile]
 ] = new Map<internal.Readable, WriteStream>([
     [subprocess.stdout, stdOutFile],
     [subprocess.stderr, stdErrFile]
 ])
 
-outStd
-    .pipe(outFile)
-    .on('error', console.error)
-    .on('finish', () => {
-        console.log('Generated a log file for stdOut.')
-        stdOutFile.end()
-    })
-
-errStd
-    .pipe(errFile)
-    .on('error', console.error)
-    .on('finish', () => {
-        console.log('Generated a log file for stdErr')
-        stdErrFile.end()
-    })
+handleStream(stdOut, outFile, 'standard output')
+handleStream(stdErr, errFile, 'standard error')
 
 subprocess.on('close', code =>
     console.log('\nThe subprocess terminated with exit code:', code)
 )
+
+function handleStream(std: internal.Readable, fStream: WriteStream, label: string) {
+    std
+        .on('error', console.error)
+        .pipe(fStream)
+        .on('finish', () => {
+            console.log('Generated a log file for', label)
+            fStream.close()
+        })
+}
