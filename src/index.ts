@@ -8,6 +8,7 @@ subprocess.on('error', console.error)
 
 const handleStream = (std: internal.Readable, fStream: WriteStream) =>
     std
+        .on('error', err => console.error('Error processing the standard stream:', err))
         .on('readable', async () => {
             for await (const chunk of std)
                 fStream.write(`${chunk}\n`)
@@ -26,5 +27,5 @@ handleStream(stdOut, outFile)
 handleStream(stdErr, errFile)
 
 subprocess.on('close', code => {
-    console.log('The child process exited with code status', code)
+    console.log('The child process terminated with exit code:', code)
 })
