@@ -20,39 +20,32 @@ const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const subprocess = (0, child_process_1.spawn)('python', [(0, path_1.join)('py', 'main.py'), ...process.argv.slice(2)]);
-const stdoutFile = (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stdout.txt'));
-const stderrFile = (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stderr.txt'));
-const logTime = (new Date).toLocaleString();
-const [[stdout, outFile], [stderr, errFile]] = new Map([
-    [subprocess.stdout, stdoutFile],
-    [subprocess.stderr, stderrFile]
-]);
-process.stdin.pipe(subprocess.stdin);
-handleStream(stdout, outFile);
-handleStream(stderr, errFile);
-subprocess.on('close', code => console.log('\nThe child process exited with status code:', code));
-function handleStream(std, fStream) {
-    std
-        .on('readable', () => __awaiter(this, void 0, void 0, function* () {
-        var _a, e_1, _b, _c;
+const handleStream = (std, fStream) => std
+    .on('readable', () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, e_1, _b, _c;
+    try {
+        for (var _d = true, std_1 = __asyncValues(std), std_1_1; std_1_1 = yield std_1.next(), _a = std_1_1.done, !_a; _d = true) {
+            _c = std_1_1.value;
+            _d = false;
+            const chunk = _c;
+            fStream.write(`${chunk}\n`);
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
         try {
-            for (var _d = true, std_1 = __asyncValues(std), std_1_1; std_1_1 = yield std_1.next(), _a = std_1_1.done, !_a; _d = true) {
-                _c = std_1_1.value;
-                _d = false;
-                const chunk = _c;
-                fStream.write(`${logTime}:\n${chunk}\n\n`);
-            }
+            if (!_d && !_a && (_b = std_1.return)) yield _b.call(std_1);
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (!_d && !_a && (_b = std_1.return)) yield _b.call(std_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    }))
-        .on('end', () => {
-        console.log('Generated a log file in the "logs" directory!');
-        fStream.end();
-    });
-}
+        finally { if (e_1) throw e_1.error; }
+    }
+}))
+    .on('end', () => fStream.end());
+const [[stdOut, outFile], [stdErr, errFile]] = new Map([
+    [subprocess.stdout, (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stdout.txt'))],
+    [subprocess.stderr, (0, fs_1.createWriteStream)((0, path_1.join)('logs', 'stderr.txt'))]
+]);
+handleStream(stdOut, outFile);
+handleStream(stdErr, errFile);
+subprocess.on('close', code => {
+    console.log('The child process exited with code status', code);
+});

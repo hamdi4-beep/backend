@@ -1,13 +1,7 @@
-1/26/2025, 2:39:15 PM:
 Traceback (most recent call last):
 
-
-1/26/2025, 2:39:15 PM:
   File "C:\Users\Hamdi\Desktop\playgrounds\Backend\nodejs\py\main.py", line 1, in <module>
     raise RuntimeError('Ops! Something went wrong...')
 
-
-1/26/2025, 2:39:15 PM:
 RuntimeError: Ops! Something went wrong...
-
 

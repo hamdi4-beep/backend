@@ -4,37 +4,27 @@ import { join } from 'path'
 import internal from 'stream'
 
 const subprocess = spawn('python', [join('py', 'main.py'), ...process.argv.slice(2)])
+subprocess.on('error', console.error)
 
-const stdoutFile = createWriteStream(join('logs', 'stdout.txt'))
-const stderrFile = createWriteStream(join('logs', 'stderr.txt'))
-
-const logTime = (new Date).toLocaleString()
-
-const [
-    [stdout, outFile],
-    [stderr, errFile]
-] = new Map<internal.Readable, WriteStream>([
-    [subprocess.stdout, stdoutFile],
-    [subprocess.stderr, stderrFile]
-])
-
-process.stdin.pipe(subprocess.stdin)
-
-handleStream(stdout, outFile)
-handleStream(stderr, errFile)
-
-subprocess.on('close', code =>
-    console.log('\nThe child process exited with status code:', code)
-)
-
-function handleStream(std: internal.Readable, fStream: WriteStream) {
+const handleStream = (std: internal.Readable, fStream: WriteStream) =>
     std
         .on('readable', async () => {
             for await (const chunk of std)
-            fStream.write(`${logTime}:\n${chunk}\n\n`)
+                fStream.write(`${chunk}\n`)
         })
-        .on('end', () => {
-            console.log('Generated a log file in the "logs" directory!')
-            fStream.end()
-        })
-}
+        .on('end', () => fStream.end())
+
+const [
+    [stdOut, outFile],
+    [stdErr, errFile]
+] = new Map<internal.Readable, WriteStream>([
+    [subprocess.stdout, createWriteStream(join('logs', 'stdout.txt'))],
+    [subprocess.stderr, createWriteStream(join('logs', 'stderr.txt'))]
+])
+
+handleStream(stdOut, outFile)
+handleStream(stdErr, errFile)
+
+subprocess.on('close', code => {
+    console.log('The child process exited with code status', code)
+})
