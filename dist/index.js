@@ -2,19 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const path_1 = require("path");
-const folders = 'parent_folder/sub_folder/sub_sub_folder'.split('/');
-const buildPath = (currFolder, i) => (0, path_1.join)(...folders.slice(0, -(folders.length - i)), currFolder);
-for (let i = 0; i < folders.length; i++) {
-    const currFolder = folders[i];
-    const currPath = buildPath(currFolder, i);
-    if ((0, fs_1.existsSync)(currPath)) {
-        console.log('The path already exists!');
-        break;
+const path = buildPath((0, path_1.dirname)('/parent-folder/sub-folder/sub-sub-folder/file.txt'));
+console.log(path);
+function buildPath(path) {
+    const dirs = path.split('/');
+    let currPath = '';
+    if (path.startsWith('/'))
+        dirs.shift();
+    for (let i = 0; i < dirs.length; i++) {
+        const currDir = dirs[i];
+        currPath = (0, path_1.join)(...dirs.slice(0, -(dirs.length - i)), currDir);
+        if ((0, fs_1.existsSync)(currPath)) {
+            console.log('The path already exists!');
+            break;
+        }
+        console.log(currPath);
     }
-    try {
-        (0, fs_1.mkdirSync)(currPath);
-    }
-    catch (e) {
-        console.error('Something went wrong:', e);
-    }
+    return currPath;
 }
