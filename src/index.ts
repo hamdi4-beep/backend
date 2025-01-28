@@ -7,9 +7,12 @@ const folders = 'parent_folder/sub_folder/sub_sub_folder'.split('/')
 
 for (let i = 0; i < folders.length; i++) {
     const currFolder = folders[i]
+    const currPath = join(...folders.slice(0, -(folders.length - i)), currFolder)
     
-    if (!existsSync(currFolder)) {
-        const currPath = folders.slice(0, -(folders.length - i))
-        mkdirSync(join(...currPath, currFolder))
+    if (existsSync(currPath)) {
+        console.log('The path already exists!')
+        break
     }
+
+    mkdirSync(currPath)
 }
