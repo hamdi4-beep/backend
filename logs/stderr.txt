@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-
-  File "C:\Users\Hamdi\Desktop\playgrounds\Backend\nodejs\py\main.py", line 1, in <module>
-    raise RuntimeError('Ops! Something went wrong...')
-
-RuntimeError: Ops! Something went wrong...
-

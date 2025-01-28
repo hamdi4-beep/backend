@@ -1,31 +1,15 @@
 import { spawn } from 'child_process'
-import { createWriteStream, WriteStream } from 'fs'
-import { join } from 'path'
+import { createWriteStream, existsSync, mkdir, mkdirSync, WriteStream } from 'fs'
+import { dirname, join } from 'path'
 import internal from 'stream'
 
-const subprocess = spawn('python', [join('py', 'main.py'), ...process.argv.slice(2)])
-subprocess.on('error', console.error)
+const folders = 'parent_folder/sub_folder/sub_sub_folder'.split('/')
 
-const handleStream = (std: internal.Readable, fStream: WriteStream) =>
-    std
-        .on('error', err => console.error('Error processing the standard stream:', err))
-        .on('readable', async () => {
-            for await (const chunk of std)
-                fStream.write(`${chunk}\n`)
-        })
-        .on('end', () => fStream.end())
-
-const [
-    [stdOut, outFile],
-    [stdErr, errFile]
-] = new Map<internal.Readable, WriteStream>([
-    [subprocess.stdout, createWriteStream(join('logs', 'stdout.txt'))],
-    [subprocess.stderr, createWriteStream(join('logs', 'stderr.txt'))]
-])
-
-handleStream(stdOut, outFile)
-handleStream(stdErr, errFile)
-
-subprocess.on('close', code => {
-    console.log('The child process terminated with exit code:', code)
-})
+for (let i = 0; i < folders.length; i++) {
+    const currFolder = folders[i]
+    
+    if (!existsSync(currFolder)) {
+        const currPath = folders.slice(0, -(folders.length - i))
+        mkdirSync(join(...currPath, currFolder))
+    }
+}
