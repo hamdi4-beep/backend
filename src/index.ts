@@ -1,29 +1,33 @@
 import { spawn } from 'child_process'
-import { createWriteStream, existsSync, mkdir, mkdirSync, WriteStream } from 'fs'
+import { createReadStream, createWriteStream, existsSync, mkdir, mkdirSync, WriteStream } from 'fs'
 import { dirname, join } from 'path'
-import internal from 'stream'
+import internal, { Transform } from 'stream'
 
-const path = buildPath(dirname('/parent-folder/sub-folder/sub-sub-folder/file.txt'))
-console.log(path)
+const path = buildPath('logs')
+
+const subprocess = spawn('python', [join('py', 'main.py'), ...process.argv.slice(2)])
+subprocess.on('error', console.error)
+
+const children = new Map<internal.Readable, WriteStream>([
+    [subprocess.stdout, createWriteStream(join(path, 'stdout.txt'))],
+    [subprocess.stderr, createWriteStream(join(path, 'stderr.txt'))]
+])
+
+for (const child of children) {
+    const [readableStream, writeableStream] = child
+
+    readableStream
+        .on('error', console.error)
+        .pipe(writeableStream)
+        .on('finish', () => {
+            console.log('Generated', writeableStream.path)
+            writeableStream.end()
+        })
+}
 
 function buildPath(path: string) {
-    const dirs = path.split('/')
-    let currPath = ''
+    if (!existsSync(path))
+        mkdirSync(path)
 
-    if (path.startsWith('/'))
-        dirs.shift()
-    
-    for (let i = 0; i < dirs.length; i++) {
-        const currDir = dirs[i]
-        currPath = join(...dirs.slice(0, -(dirs.length - i)), currDir)
-
-        if (existsSync(currPath)) {
-            console.log('The path already exists!')
-            break
-        }
-
-        console.log(currPath)
-    }
-
-    return currPath
+    return path
 }
