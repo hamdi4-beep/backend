@@ -1,4 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const createList = (iteration) => iteration > 0 ? [...createList(iteration - 1), iteration] : [];
-console.log(createList(4));
+const child_process_1 = require("child_process");
+const http_1 = require("http");
+const path_1 = require("path");
+const subprocess = (0, child_process_1.spawn)('node', [(0, path_1.join)('dist', 'client/index.js')]);
+const server = (0, http_1.createServer)();
+server.listen(3000, () => console.log('The server is listening on port:', 3000));
+server.on('connection', socket => console.log('A client is connected to the server!'));
+subprocess.on('error', console.error);
+subprocess.stderr.pipe(process.stderr);
+subprocess.stdout.pipe(process.stdout);
+subprocess.on('close', code => console.log('The child process terminated with code status:', code));

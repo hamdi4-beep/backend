@@ -1,2 +1,6 @@
-import { connect } from 'net'
-connect(3000)
+import { connect } from "net";
+
+const socket = connect(3000)
+console.log(socket)
+
+socket.end()
