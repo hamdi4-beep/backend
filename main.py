@@ -3,14 +3,21 @@ import socket
 BINDING_PORT = 8000
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind(('localhost', BINDING_PORT))
+    s.bind(('127.0.0.1', BINDING_PORT))
 
-    print('Listening in for connections')
+    print(f'Listening for connections on port {BINDING_PORT}')
     s.listen()
 
     conn, addr = s.accept()
-    print(f'Connected to {addr}')
+    print(f'Connected to {addr[0]}:{addr[1]}')
 
-    with conn as client:
-        data = client.recv(1024)
-        if data: print(f'Received {data}')
+    try:
+        with conn as c:
+            while True:
+                data = c.recv(1024).decode()
+                if not data: break
+                print(data)
+    except KeyboardInterrupt:
+        print(f'Connection interrupted by user')
+    except ConnectionResetError:
+        print(f'Connection reset by peer')
