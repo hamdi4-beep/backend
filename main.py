@@ -1,4 +1,8 @@
-import requests, time
+from concurrent.futures import ThreadPoolExecutor
+import requests, time, threading
+
+MAX_WORKERS = 10
+local_thread = threading.local()
 
 def fetch_site(url):
     try:
@@ -8,8 +12,8 @@ def fetch_site(url):
         print(f'Fetching {url} failed: {e}')
 
 def fetch_all(sites):
-    for site in sites:
-        fetch_site(site)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        executor.map(fetch_site, sites)
 
 def main():
     start_time = time.perf_counter()
