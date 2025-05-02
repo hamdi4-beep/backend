@@ -10,11 +10,14 @@ app.listen(3000, () => console.log('Listening in for requests on port', 3000))
 app.use(express.urlencoded())
 
 app.post('/', (request, response) => {
-    const value = Object.keys(request.body)[0]
+    const filename = Object.keys(request.body)[0]
     
     const socket = connect(BINDING_PORT, 'localhost', () => {
         console.log('Connected to the remote socket.')
-        socket.end(value)
+        
+        createReadStream(filename)
+            .on('error', console.error)
+            .pipe(socket)
     })
 
     socket
@@ -25,6 +28,10 @@ app.post('/', (request, response) => {
             }
 
             console.error(err)
+
+            response
+                .status(501)
+                .end('Something went wrong!')
         })
         .pipe(response)
 })
