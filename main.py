@@ -1,6 +1,6 @@
 import requests, time
 
-def log_time(func):
+def measure_time(func):
     def wrapper(*args, **kwargs):
         start = time.perf_counter()
         result = func(*args, **kwargs)
@@ -11,15 +11,14 @@ def log_time(func):
 
     return wrapper
 
-@log_time
+@measure_time
 def fetch_site(url):
-    try:
-        with requests.get(url) as response:
-            if not response.ok:
-                response.raise_for_status()
-            return f'Read {len(response.content)} bytes from {url}'
-    except requests.exceptions.RequestException as e:
-        print(f'Failed to fetch {url}: {e}')
+    with requests.get(url) as response:
+        if response.raise_for_status():
+            return response.raise_for_status()
+        print(f'Read {len(response.content)} bytes from {url}')
 
-ret = fetch_site('http://python.org')
-print(ret)
+try:
+    fetch_site('http://google.con')
+except requests.exceptions.RequestException as e:
+    print(e)
