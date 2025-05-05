@@ -1,31 +1,42 @@
 from concurrent.futures import ThreadPoolExecutor
-import requests, time, threading
+import requests, time
+import random
 
 MAX_WORKERS = 10
-local_thread = threading.local()
 
 def fetch_site(url):
+    start_time = time.time()
+
     try:
         with requests.get(url) as response:
-            print(f'Read {len(response.content)} bytes from {url}')
-    except requests.exceptions.RequestException as e:
-        print(f'Fetching {url} failed: {e}')
+            if not response.ok:
+                raise requests.exceptions.RequestException
 
-def fetch_all(sites):
+            time.sleep(random.random() * 10)
+
+            return f'Read {len(response.content)} bytes from {url} in {round(time.time() - start_time, 2)} seconds\n'
+    except requests.exceptions.RequestException as e:
+        print(f'Failed to fetch {url}: {e}')
+
+def fetch_all(urls: list):
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        executor.map(fetch_site, sites)
+        return executor.map(fetch_site, urls)
+
+def save_to_file(content):
+    try:
+        with open('log.text', 'a+') as f:
+            f.write(content)
+    except Exception as e:
+        print(f'Something went wrong: {e}')
 
 def main():
-    start_time = time.perf_counter()
+    for result in fetch_all([
+        'https://docs.python.org/3/tutorial/inputoutput.html#fancier-output-formatting',
+        'https://docs.python.org/3/tutorial/errors.html'
+    ]):
+        save_to_file(result)
 
-    fetch_all([
-        'https://python.org',
-        'https://github.com',
-        'https://realpython.com/python-concurrency/',
-        'https://realpython.com/python-gil/'
-    ])
-
-    print(f'Fetched in {time.perf_counter() - start_time} seconds')
+    print('All done!')
 
 if __name__ == '__main__':
     main()
