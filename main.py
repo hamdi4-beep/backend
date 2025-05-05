@@ -5,7 +5,7 @@ import random
 MAX_WORKERS = 10
 
 def fetch_site(url):
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     try:
         with requests.get(url) as response:
@@ -14,7 +14,7 @@ def fetch_site(url):
 
             time.sleep(random.random() * 10)
 
-            return f'Read {len(response.content)} bytes from {url} in {round(time.time() - start_time, 2)} seconds\n'
+            return f'Read {len(response.content)} bytes from {url} in {round(time.perf_counter() - start_time, 2)} seconds\n'
     except requests.exceptions.RequestException as e:
         print(f'Failed to fetch {url}: {e}')
 
