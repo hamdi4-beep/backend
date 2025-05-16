@@ -8,5 +8,8 @@ socket
     .on('error', console.error)
     .on('connect', () => {
         const readStream = createReadStream('package.json').on('error', console.error)
-        readStream.pipe(socket)
+
+        readStream
+            .pipe(socket)
+            .on('end', () => console.log('File sent to the remote socket!'))
     })

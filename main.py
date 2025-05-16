@@ -22,7 +22,10 @@ def main():
         conn, addr = s.accept()
         print("Connected by", addr)
 
-        handle_client(conn)
+        try:
+            handle_client(conn)
+        except Exception as e:
+            print(f'Something went wrong: {e}')
 
 if __name__ == '__main__':
     main()
