@@ -5,12 +5,13 @@ BINDING_PORT = 8000
 def handle_client(client_socket):
     received_data = ''
 
-    while True:
-        data = client_socket.recv(1024).decode()
-        if not data: break
-        received_data += data
+    with client_socket as c:
+        while True:
+            data = c.recv(1024).decode()
+            if not data: break
+            received_data += data
 
-    print(f'Received: {received_data}')
+    print(received_data)
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -24,6 +25,8 @@ def main():
 
         try:
             handle_client(conn)
+        except KeyboardInterrupt:
+            print('Connection closed by user')
         except Exception as e:
             print(f'Something went wrong: {e}')
 
