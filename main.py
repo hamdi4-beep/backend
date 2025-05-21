@@ -1,34 +1,38 @@
-import socket
+import concurrent.futures, requests, time
 
-BINDING_PORT = 8000
+def measure_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
 
-def handle_client(client_socket):
-    received_data = ''
+        print(f'{func.__name__} took {time.perf_counter() - start_time} seconds')
 
-    with client_socket as c:
-        while True:
-            data = c.recv(1024).decode()
-            if not data: break
-            received_data += data
+        return result
 
-    print(received_data)
+    return wrapper
+
+def fetch_url(url):
+    with requests.get(url) as response:
+        if not response.ok:
+            return response.status_code
+        return f'Read {len(response.content)} bytes from {url}'
+
+@measure_time
+def fetch_all(urls):
+    results = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for future in concurrent.futures.as_completed([executor.submit(fetch_url, url) for url in urls]):
+            results.append(future.result())
+
+    return results
 
 def main():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('localhost', BINDING_PORT))
-
-        s.listen()
-        print("Waiting for connection...")
-
-        conn, addr = s.accept()
-        print("Connected by", addr)
-
-        try:
-            handle_client(conn)
-        except KeyboardInterrupt:
-            print('Connection closed by user')
-        except Exception as e:
-            print(f'Something went wrong: {e}')
+    try:
+        response = fetch_all(['https://python.org', 'https://github.com'])
+        print(response)
+    except Exception as e:
+        print(f'Something went wrong: {e}')
 
 if __name__ == '__main__':
     main()
