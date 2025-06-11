@@ -1,14 +1,19 @@
-import requests
+import requests, concurrent.futures
 
-def handle_request(url):
+def fetch_url(url):
     with requests.get(url) as response:
         if response.ok:
             return f'Read {len(response.content)} bytes from {url}'
 
+def fetch_all(urls: list):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for future in [executor.submit(fetch_url, url) for url in urls]:
+            result = future.result()
+            print(result)
+
 def main():
     try:
-        result = handle_request("htp://python.org")
-        print(result)
+        fetch_all(['https://python.org', 'https://github.com'])
     except Exception as e:
         print(f'Something went wrong: {e}')
 
