@@ -1,13 +1,14 @@
-import time
-
-import requests, concurrent.futures
+import requests, concurrent.futures, time
 
 def measure_time(func):
+    """A decorator that measures the execution time of a function"""
     def wrapper(*args, **kwargs):
         start = time.perf_counter()
         result = func(*args, **kwargs)
 
         print(f'{func.__name__} took {time.perf_counter() - start} seconds')
+
+        return result
 
     return wrapper
 
