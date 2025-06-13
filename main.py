@@ -1,32 +1,23 @@
-import requests, concurrent.futures, time
+import concurrent.futures
 
-def measure_time(func):
-    """A decorator that measures the execution time of a function"""
-    def wrapper(*args, **kwargs):
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
+import requests
 
-        print(f'{func.__name__} took {time.perf_counter() - start} seconds')
-
-        return result
-
-    return wrapper
-
-def fetch_url(url):
+def fetch_url(url: str):
     with requests.get(url) as response:
         if response.ok:
-            return f'Read {len(response.content)} bytes from {url}'
+            return response.content
 
-@measure_time
-def fetch_all(urls: list):
+def threaded_fetch(url: str):
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        for future in [executor.submit(fetch_url, url) for url in urls]:
-            result = future.result()
-            print(result)
+        future = executor.submit(fetch_url, url)
+
+        if concurrent.futures.as_completed(future):
+            return future.result()
 
 def main():
     try:
-        fetch_all(['https://www.python.org', 'https://www.github.com'])
+        result = threaded_fetch("https://api.github.com/users/hamdi4-beep")
+        print(result)
     except Exception as e:
         print(f'Something went wrong: {e}')
 
