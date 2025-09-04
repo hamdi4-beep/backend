@@ -1,22 +1,24 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, SchemaType } from "mongoose";
 
 const commentSchema = new mongoose.Schema({
     content: {
         type: String,
         required: true
     },
-    username: {
-        type: String,
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     score: {
         type: Number,
         required: true
     },
-    replies: {
-        type: Array<string>,
+    replies: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Reply',
         required: true
-    }
+    }]
 }, { timestamps: true })
 
 const Comment = mongoose.model('Comment', commentSchema)
