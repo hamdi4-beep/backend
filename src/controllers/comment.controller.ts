@@ -11,8 +11,7 @@ export const getComments = async (request: express.Request, response: express.Re
             .status(200)
             .json({
                 success: true,
-                message: 'Retreived all comments',
-                data: comments
+                comments
             })
     } catch (err) {
         next(err)
@@ -30,8 +29,7 @@ export const getCommentById = async (request: express.Request, response: express
             .status(200)
             .json({
                 success: true,
-                message: 'Retreived a single comment',
-                data: comment
+                comment
             })
     } catch (err) {
         next(err)
@@ -57,7 +55,7 @@ export const createComment = async (request: express.Request, response: express.
             .json({
                 success: true,
                 message: 'Comment created successfully!',
-                data: newComments[0]
+                comment: newComments[0]
             })
     } catch (err) {
         await session.abortTransaction()
