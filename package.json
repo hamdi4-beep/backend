@@ -14,6 +14,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.4",
   "dependencies": {
+    "@arcjet/inspect": "1.0.0-beta.11",
+    "@arcjet/node": "1.0.0-beta.11",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.97",
