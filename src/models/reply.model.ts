@@ -23,7 +23,7 @@ const replySchema = new mongoose.Schema({
         type: Number,
         required: true
     }
-})
+}, { timestamps: true })
 
 const Reply = mongoose.model('Reply', replySchema)
 

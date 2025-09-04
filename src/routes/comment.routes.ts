@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { createComment, getCommentById, getComments } from "../controllers/comment.controller";
-import Comment from "../models/comment.model";
 
 const commentRouter = Router()
 
