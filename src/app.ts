@@ -27,6 +27,6 @@ app.get('/', (request, response, next) => {
 })
 
 app.listen(PORT, () => {
-    console.log('Listening in for requests on port', PORT)
+    console.log('Listening in for requests on port running currently in', PORT, process.env.NODE_ENV)
     connect_to_db()
 })
