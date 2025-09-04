@@ -1,15 +1,7 @@
 import express, { NextFunction } from 'express'
 import mongoose from 'mongoose'
 import Comment from '../models/comment.model'
-
-const isObjectEmpty = (obj: Object) =>
-    Object.keys(obj).length === 0
-
-const handleError = (message: string, statusCode: number) => {
-    const error = new Error(message) as Error & { statusCode: number}
-    error.statusCode = statusCode
-    throw error
-}
+import { handleError, isObjectEmpty } from '../utils'
 
 export const getComments = async (request: express.Request, response: express.Response, next: NextFunction) => {
     try {
