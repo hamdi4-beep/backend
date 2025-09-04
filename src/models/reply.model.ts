@@ -25,6 +25,6 @@ const replySchema = new mongoose.Schema({
     }
 })
 
-const Reply = new mongoose.Model('Reply', replySchema)
+const Reply = mongoose.model('Reply', replySchema)
 
 export default Reply

@@ -5,6 +5,7 @@ import replyRouter from './routes/reply.routes'
 import errorMiddleware from './middlewares/error.middleware'
 import connect_to_db from './database/mongodb'
 import arcjetMiddleware from './middlewares/arcjet.middleware'
+import userRouter from './routes/user.routes'
 
 const app = express()
 
@@ -14,6 +15,7 @@ app.use(arcjetMiddleware)
 
 app.use('/api/v1/comments', commentRouter)
 app.use('/api/v1/replies', replyRouter)
+app.use('/api/v1/users', userRouter)
 
 app.use(errorMiddleware)
 
