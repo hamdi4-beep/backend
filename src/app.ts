@@ -1,5 +1,5 @@
 import express, { urlencoded } from 'express'
-import { PORT } from '../config/env'
+import { NODE_ENV, PORT } from '../config/env'
 import commentRouter from './routes/comment.routes'
 import replyRouter from './routes/reply.routes'
 import errorMiddleware from './middlewares/error.middleware'
@@ -27,6 +27,6 @@ app.get('/', (request, response, next) => {
 })
 
 app.listen(PORT, () => {
-    console.log('Listening in for requests on port running currently in', PORT, process.env.NODE_ENV)
+    console.log(`Listening for requests on port: ${PORT}, in ${NODE_ENV} environment`)
     connect_to_db()
 })
