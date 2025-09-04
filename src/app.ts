@@ -24,19 +24,6 @@ app.get('/', (request, response, next) => {
         })
 })
 
-app.get('/error', (request, response, next) => {
-    const error = new Error('A problem occurred on the backend')
-
-    response
-        .status(500)
-        .json({
-            success: false,
-            message: error.message
-        })
-
-    next(error)
-})
-
 app.listen(PORT, () => {
     console.log('Listening in for requests on port', PORT)
     connect_to_db()
