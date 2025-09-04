@@ -7,34 +7,20 @@ const arcjetMiddleware = async (request: express.Request, response: express.Resp
             requested: 1
         })
 
-        switch (decision.isDenied()) {
-            case decision.reason.isBot():
-                response
-                    .status(403)
-                    .json({
-                        success: false,
-                        message: 'Bot detection'
-                    })
+        if (decision.isDenied()) {
+            if (decision.reason.isBot()) {
+                return response.status(409).json({
+                    success: false,
+                    message: 'Bot detection'
+                })
+            }
 
-                break
-
-            case decision.reason.isRateLimit():
-                response
-                    .status(429)
-                    .json({
-                        success: false,
-                        message: 'Rate limit exceeded'
-                    })
-
-                break
-
-            default:
-                response
-                    .status(403)
-                    .json({
-                        success: false,
-                        message: 'Access denied'
-                    })
+            if (decision.reason.isRateLimit()) {
+                return response.status(429).json({
+                    success: false,
+                    message: 'Rate limit exceeded'
+                })
+            }
         }
 
         next()
