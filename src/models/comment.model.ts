@@ -1,11 +1,12 @@
 import mongoose, { Schema, SchemaType } from "mongoose";
+import { replySchema } from "./reply.model";
 
 const commentSchema = new mongoose.Schema({
     content: {
         type: String,
         required: true
     },
-    user: {
+    userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -14,11 +15,7 @@ const commentSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    replies: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Reply',
-        required: true
-    }]
+    replies: [replySchema]
 }, { timestamps: true })
 
 const Comment = mongoose.model('Comment', commentSchema)
