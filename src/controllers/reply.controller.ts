@@ -23,6 +23,27 @@ export const getReplies = async (request: express.Request, response: express.Res
     }
 }
 
+export const getReplyById = async (request: express.Request, response: express.Response, next: NextFunction) => {
+    try {
+        const reply = await Reply.findById(request.params.id)
+
+        if (!reply) {
+            const error = new Error('Unable to find a reply with that id') as Error & {statusCode: number}
+            error.statusCode = 404
+            throw error
+        }
+
+        response
+            .status(200)
+            .json({
+                success: true,
+                reply
+            })
+    } catch (err) {
+        next(err)
+    }
+}
+
 export const createReply = async (request: express.Request, response: express.Response, next: NextFunction) => {
     const session = await mongoose.startSession()
     session.startTransaction()
