@@ -41,6 +41,8 @@ export const createReply = async (request: express.Request, response: express.Re
 
         await session.commitTransaction()
     } catch (err) {
+        await session.abortTransaction()
+        session.endSession()
         next(err)
     }
 }
