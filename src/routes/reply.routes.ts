@@ -1,12 +1,8 @@
 import { Router } from "express";
+import { getReplies } from "../controllers/reply.controller";
 
 const replyRouter = Router()
 
-replyRouter.get('/', (request, response) =>
-    response.send({
-        success: true,
-        message: 'GET all replies'
-    })
-)
+replyRouter.get('/', getReplies)
 
 export default replyRouter
